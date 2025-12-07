@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discipline07</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            /* Vibrant Study Theme */
+            --bg-color: #f0f4f8;          /* Slate White */
+            --header-bg: linear-gradient(135deg, #0052cc 0%, #0033a0 100%); /* Deep Royal Blue */
+            --card-bg: #ffffff;
+            --primary-blue: #2962ff;      /* Electric Blue */
+            --accent-light: #e3f2fd;      /* Soft Sky Blue */
+            --text-main: #1a237e;         /* Dark Indigo Text */
+            --text-sub: #546e7a;          /* Blue-Grey Text */
+            --success: #00c853;           /* Bright Green */
+            --gold: #ffd700;              /* For 1 Year */
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            padding-top: 130px; /* Space for the taller header */
+        }
+
+        /* --- HEADER & QUOTE SECTION --- */
+        header {
+            background: var(--header-bg);
+            color: white;
+            padding: 15px 25px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 40, 120, 0.3);
+            z-index: 1000;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-item {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-left: 5px;
+        }
+
+        /* Quote Box */
+        .quote-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--accent-light);
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .greeting-text {
+            font-weight: 700;
+            color: var(--accent-light);
+            margin-right: 8px;
+        }
+
+        .quote-text {
+            font-style: italic;
+            opacity: 0.95;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 110px; /* Adjust based on header height */
+            width: 100%;
+            z-index: 900;
+        }
+        
+        /* Adjusting top padding dynamically via JS might be better, 
+           but fixed works for this layout */
+
+        .nav-btn {
+            flex: 1;
+            max-width: 200px;
+            background: none;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-sub);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--primary-blue);
+            background: rgba(41, 98, 255, 0.05);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .screen {
+            display: none;
+            padding: 20px;
+            max-width: 600px;
+            margin: 20px auto 0 auto;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .day-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0,0,0,0.03);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .day-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--primary-blue);
+        }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 12px;
+        }
+
+        .day-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+
+        .date-display {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        /* --- INPUTS --- */
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8fbff;
+            border-radius: 10px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--primary-blue);
+        }
+
+        .checkbox-label {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 1.05rem;
+        }
+
+        .points-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            width: 80px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-blue);
+        }
+
+        /* --- MILESTONE MODAL --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 85%;
+            width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin: 0 0 10px 0;
+        }
+
+        .modal-streak {
+            font-size: 4rem;
+            font-weight: 900;
+            background: -webkit-linear-gradient(45deg, var(--primary-blue), #00c853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+
+        .modal-msg {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        .modal-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(41, 98, 255, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Animations */
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <header id="mainHeader">
+        <div class="header-top">
+            <div class="brand">DISCIPLINE07</div>
+            <div class="stats-container">
+                <div class="stat-item">Points: <span id="totalPoints" class="stat-value">0</span></div>
+                <div class="stat-item">Streak: <span id="streakCount" class="stat-value">0</span> 🔥</div>
+            </div>
+        </div>
+        <div class="quote-box">
+            <span id="greetingDisplay" class="greeting-text">Good Morning,</span>
+            <span id="quoteDisplay" class="quote-text">“Focus on the step in front of you.”</span>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('home')">Today's Action</button>
+        <button class="nav-btn" onclick="switchTab('library')">Library Log</button>
+    </nav>
+
+    <div id="home" class="screen active">
+        <div id="todayContainer"></div>
+    </div>
+
+    <div id="library" class="screen">
+        <div id="historyContainer"></div>
+    </div>
+
+    <div id="milestoneModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-title">CONGRATULATIONS!</h2>
+            <div class="modal-streak" id="milestoneNumber">11</div>
+            <p class="modal-msg">Days of Unbroken Discipline.</p>
+            <button class="modal-btn" onclick="closeModal()">Keep Grinding</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const START_DATE_STRING = "2025-12-07T04:00:00+05:30"; // 4 AM IST
+        
+        // --- MILESTONE DATA ---
+        const MILESTONES = [11, 21, 51, 101, 121, 151, 201, 251, 301, 365, 401, 451, 501];
+        
+        // --- QUOTES DATA ---
+        const QUOTES = [
+            "“Life is not about finding yourself. Life is about creating yourself.”",
+            "“Every moment is a fresh beginning.”",
+            "“Difficult roads often lead to beautiful destinations.”",
+            "“Live less out of habit and more out of intent.”",
+            "“Dream big. Work hard. Stay humble.”",
+            "“Don’t wait for opportunity. Create it.”",
+            "“Your only limit is your mind.”",
+            "“Success is built on courage, not comfort.”",
+            "“Silence is sometimes the best answer.”",
+            "“A calm mind brings inner strength.”",
+            "“Knowledge grows when shared.”",
+            "“Listen more than you speak.”",
+            "“A grateful heart is a magnet for miracles.”",
+            "“Choose kindness, always.”",
+            "“Happiness is a habit, not a destination.”",
+            "“Stay strong.”",
+            "“Keep going.”",
+            "“You are enough.”",
+            "“Never settle.”",
+            "“Believe. Begin. Become.”"
+        ];
+
+        let appData = JSON.parse(localStorage.getItem('discipline07_pro_data')) || {};
+
+        // --- INIT GREETING & QUOTE ---
+        function setHeaderContent() {
+            // Greeting
+            const hour = new Date().getHours();
+            let greeting = "Good Morning";
+            if (hour >= 12 && hour < 17) greeting = "Good Afternoon";
+            else if (hour >= 17) greeting = "Good Evening";
+            document.getElementById('greetingDisplay').innerText = greeting + ",";
+
+            // Random Quote
+            // We use the day index to rotate, or random per load. Let's do random per load for variety.
+            const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            document.getElementById('quoteDisplay').innerText = randomQuote;
+        }
+
+        // --- CORE LOGIC ---
+        function init() {
+            setHeaderContent();
+            render();
+            
+            // Adjust body padding based on header height dynamically
+            const headerHeight = document.getElementById('mainHeader').offsetHeight;
+            document.body.style.paddingTop = (headerHeight + 60) + 'px';
+            document.querySelector('.nav-tabs').style.top = headerHeight + 'px';
+        }
+
+        function render() {
+            const startDate = new Date(START_DATE_STRING);
+            const now = new Date();
+
+            if (now < startDate) {
+                document.getElementById('todayContainer').innerHTML = 
+                    `<div style="text-align:center; padding:40px; color:#546e7a;">
+                        <h3>Journey Pending...</h3>
+                        <p>Begins: Dec 7th, 2025 @ 4:00 AM IST</p>
+                    </div>`;
+                return;
+            }
+
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const diffTime = now - startDate;
+            const currentDayIndex = Math.floor(diffTime / msPerDay);
+
+            const todayContainer = document.getElementById('todayContainer');
+            const historyContainer = document.getElementById('historyContainer');
+            
+            todayContainer.innerHTML = '';
+            historyContainer.innerHTML = '';
+
+            for (let i = currentDayIndex; i >= 0; i--) {
+                const dayDate = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
+                const dateString = dayDate.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+                const dayKey = `day_${i}`;
+
+                const cardHTML = createCardHTML(i + 1, dateString, dayKey);
+                historyContainer.innerHTML += cardHTML;
+                if (i === currentDayIndex) todayContainer.innerHTML = cardHTML;
+            }
+            
+            updateStats(currentDayIndex);
+        }
+
+        function createCardHTML(dayNumber, dateString, dayKey) {
+            const data = appData[dayKey] || { checked: false, points: 0 };
+            const isChecked = data.checked ? 'checked' : '';
+            
+            return `
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-title">DAY ${String(dayNumber).padStart(2, '0')}</span>
+                    <span class="date-display">${dateString}</span>
+                </div>
+                
+                <div class="control-row">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="check_${dayKey}" onchange="handleCheck('${dayKey}')" ${isChecked}>
+                        <span class="checkbox-label">Daily Discipline Complete</span>
+                    </label>
+                </div>
+
+                <div class="control-row" style="background:transparent; border:1px solid #eee; padding:5px;">
+                    <div class="points-wrapper">
+                        <span style="font-weight:600; color:var(--text-sub);">Points Earned:</span>
+                        <input type="number" id="points_${dayKey}" value="${data.points}" oninput="handlePoints('${dayKey}')" placeholder="0">
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // --- HANDLERS ---
+        window.handleCheck = function(dayKey) {
+            if (!appData[dayKey]) appData[dayKey] = { checked: false, points: 0 };
+            const checkbox = document.getElementById(`check_${dayKey}`);
+            
+            appData[dayKey].checked = checkbox.checked;
+            saveData();
+            
+            // Recalculate streak immediately to check for milestones
+            const streak = calculateStreak();
+            updateUIStats(); // Update numbers
+            
+            if (checkbox.checked) {
+                checkMilestone(streak);
+            }
+        };
+
+        window.handlePoints = function(dayKey) {
+            if (!appData[dayKey]) appData[dayKey] = { checked: false, points: 0 };
+            const input = document.getElementById(`points_${dayKey}`);
+            appData[dayKey].points = parseInt(input.value) || 0;
+            saveData();
+            updateUIStats();
+        };
+
+        function saveData() {
+            localStorage.setItem('discipline07_pro_data', JSON.stringify(appData));
+        }
+
+        // --- STATS & MILESTONES ---
+        function calculateStreak() {
+            const startDate = new Date(START_DATE_STRING);
+            const now = new Date();
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const currentDayIndex = Math.floor((now - startDate) / msPerDay);
+            
+            let streak = 0;
+            for (let i = currentDayIndex; i >= 0; i--) {
+                const key = `day_${i}`;
+                if (appData[key] && appData[key].checked) {
+                    streak++;
+                } else if (i !== currentDayIndex) {
+                    break; 
+                }
+            }
+            return streak;
+        }
+
+        function updateStats(currentDayIndex) {
+            updateUIStats();
+        }
+
+        function updateUIStats() {
+            let totalPoints = 0;
+            Object.values(appData).forEach(day => totalPoints += (day.points || 0));
+            document.getElementById('totalPoints').innerText = totalPoints;
+            document.getElementById('streakCount').innerText = calculateStreak();
+        }
+
+        function checkMilestone(streak) {
+            if (MILESTONES.includes(streak)) {
+                triggerMilestoneAnimation(streak);
+            }
+        }
+
+        // --- ANIMATIONS ---
+        function triggerMilestoneAnimation(streak) {
+            const modal = document.getElementById('milestoneModal');
+            document.getElementById('milestoneNumber').innerText = streak;
+            
+            // Special text for 1 year
+            if(streak === 365) {
+                document.querySelector('.modal-title').innerText = "LEGENDARY STATUS";
+                document.querySelector('.modal-msg').innerText = "One Full Year of Iron Discipline.";
+            } else {
+                document.querySelector('.modal-title').innerText = "CONGRATULATIONS!";
+                document.querySelector('.modal-msg').innerText = "Days of Unbroken Discipline.";
+            }
+
+            modal.style.display = 'flex';
+            
+            // Fire Confetti
+            fireConfetti(streak === 365);
+        }
+
+        function fireConfetti(isBigEvent) {
+            const duration = isBigEvent ? 5000 : 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                // Launch confetti from left and right edges
+                confetti({
+                    particleCount: isBigEvent ? 5 : 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#2962ff', '#00c853', '#ffd700']
+                });
+                confetti({
+                    particleCount: isBigEvent ? 5 : 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#2962ff', '#00c853', '#ffd700']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+       
